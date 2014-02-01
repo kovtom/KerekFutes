@@ -46,8 +46,8 @@ local.properties
 *.suo
 *.user
 *.sln.docstates
-*.vcxproj
-*.filters
+#*.vcxproj
+#*.filters
 # Build results
 
 [Dd]ebug/
