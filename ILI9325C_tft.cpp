@@ -1033,12 +1033,13 @@ void ILI9325C_tft::_hw_special_init()
 	sbi(P_WR, B_WR);
 }
 
+/*
 inline void write_byte_lo(unsigned char ch)
 {
 	ROM_GPIOPinWrite(GPIO_PORTD_BASE, 0x0f, ch);
 	ROM_GPIOPinWrite(GPIO_PORTA_BASE, 0xf0, ch);
 }
-
+*/
 inline void write_byte_hi(unsigned char ch)
 {
 	ROM_GPIOPinWrite(GPIO_PORTB_BASE, 0xff, ch);
@@ -1062,6 +1063,9 @@ void ILI9325C_tft::_set_direction_registers(byte mode)
 	ROM_GPIOPinTypeGPIOOutput(GPIO_PORTB_BASE, 0xff);
 }
 
+void ILI9325C_tft::_fast_fill_16(int ch, int cl, long pix){}
+
+/*
 void ILI9325C_tft::_fast_fill_16(int ch, int cl, long pix)
 {
 	long blocks;
@@ -1095,6 +1099,7 @@ void ILI9325C_tft::_fast_fill_16(int ch, int cl, long pix)
 			pulse_low(P_WR, B_WR);
 		}
 }
+*/
 
 void ILI9325C_tft::_fast_fill_8(int ch, long pix)
 {

@@ -64,6 +64,10 @@ void setup()
 	myTouch.InitTouch();
 	myTouch.setPrecision(PREC_MEDIUM);
 
+	//pinMode(PD_0, OUTPUT);
+	
+	tone(PF_0, 1000, 30);
+
 	myGLCD.setFont(BigFont);
 	myGLCD.setBackColor(0, 0, 255);
 	drawButtons();  
@@ -140,6 +144,10 @@ void waitForIt(int x1, int y1, int x2, int y2)
 	myGLCD.drawRoundRect (x1, y1, x2, y2);
 	while (myTouch.dataAvailable())
 		myTouch.read();
+	tone(PF_0, 1047, 30);
+	tone(PF_0, 2093, 30);
+	tone(PF_0, 4186, 30);
+
 	myGLCD.setColor(255, 255, 255);
 	myGLCD.drawRoundRect (x1, y1, x2, y2);
 }
