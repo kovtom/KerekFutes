@@ -3,6 +3,7 @@
 #ifndef _ILI9325C_TFT_h
 #define _ILI9325C_TFT_h
 
+#include "Fonts.h"
 /*
   ILI9325C_tft.h - Arduino/chipKit library support for Color TFT LCD Boards
   Copyright (C)2010-2013 Henning Karlsen. All right reserved
@@ -78,25 +79,7 @@
 #define VGA_TRANSPARENT		0xFFFFFFFF
 
 #include "Energia.h"
-
-// *** HW_LM4F Hardwarespecific defines ***
-#define cbi(reg, mask) GPIOPinWrite(reg, mask, 0)
-#define sbi(reg, mask) GPIOPinWrite(reg, mask, mask)
-#define pulse_high(reg, bitmask) { sbi(reg, bitmask); cbi(reg, bitmask); }
-#define pulse_low(reg, bitmask) { cbi(reg, bitmask); sbi(reg, bitmask); }
-
-#define swap(type, i, j) {type t = i; i = j; j = t;}
-
-#define fontbyte(x) cfont.font[x]  
-
-#define pgm_read_word(data) *(data)
-#define pgm_read_byte(data) *(data)
-#define PROGMEM
-typedef volatile uint32_t regtype;
-typedef uint8_t regsize;
-typedef unsigned short* bitmapdatatype;
-
-#define portOutputRegister(x)	(regtype)portBASERegister(x)
+#include "HW_LM4F_defines.h"
 
 struct _current_font
 {

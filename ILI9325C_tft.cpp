@@ -856,7 +856,16 @@ void ILI9325C_tft::printNumF(double num, byte dec, int x, int y, char divider, i
 	print(st,x,y);
 }
 #endif
-
+/*
+void ILI9325C_tft::setFont(uint8_t* font)
+{
+	cfont.font=font;
+	cfont.x_size=fontbyte(0);
+	cfont.y_size=fontbyte(1);
+	cfont.offset=fontbyte(2);
+	cfont.numchars=fontbyte(3);
+}
+*/
 void ILI9325C_tft::setFont(uint8_t* font)
 {
 	cfont.font=font;
