@@ -23,4 +23,6 @@ typedef volatile uint32_t regtype;
 typedef uint8_t regsize;
 typedef unsigned short* bitmapdatatype;
 
+#define TONE_PIN PD_0
+
 #endif //_HW_LM4F_DEFINES_H_

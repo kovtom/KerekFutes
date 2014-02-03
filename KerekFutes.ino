@@ -19,6 +19,9 @@
 // Declare which fonts we will be using
 //extern uint8_t SmallFont[];
 extern uint8_t BigFont[];
+extern uint8_t DotMatrix_M[];
+extern uint8_t SmallFont[];
+//extern uint8_t Ubuntu[];
 
 // ILI9325C kijelzo bekotese:
 // 1.  GND	-	GND
@@ -63,10 +66,8 @@ void setup()
 
 	myTouch.InitTouch();
 	myTouch.setPrecision(PREC_MEDIUM);
-
-	//pinMode(PD_0, OUTPUT);
 	
-	tone(PF_0, 1000, 30);
+	welcomeScreen();
 
 	myGLCD.setFont(BigFont);
 	myGLCD.setBackColor(0, 0, 255);
@@ -76,6 +77,31 @@ void setup()
 /*************************
 **   Custom functions   **
 *************************/
+void welcomeScreen()
+{
+	myGLCD.setFont(DotMatrix_M);
+
+	myGLCD.setColor(VGA_YELLOW);
+	myGLCD.print("TYRE HEATING", CENTER, 60);
+	myGLCD.print("SYSTEM", CENTER, 120);
+	myGLCD.drawRect(0,200,319,210);
+
+	myGLCD.setFont(SmallFont);
+	myGLCD.setColor(VGA_OLIVE);
+	myGLCD.print("Made by kovNET",LEFT,227);
+	myGLCD.print("Version 0.1", RIGHT, 227);
+
+	myGLCD.setColor(VGA_BLUE);
+	for(int i = 1; i < 319; i += 2)
+	{
+		myGLCD.drawLine(i,202,i,208);
+		delay(10);
+	}
+	delay(2500);
+	myGLCD.clrScr();
+
+	tone(TONE_PIN, 1000, 50);
+}
 
 void drawButtons()
 {
@@ -144,9 +170,9 @@ void waitForIt(int x1, int y1, int x2, int y2)
 	myGLCD.drawRoundRect (x1, y1, x2, y2);
 	while (myTouch.dataAvailable())
 		myTouch.read();
-	tone(PF_0, 1047, 30);
-	tone(PF_0, 2093, 30);
-	tone(PF_0, 4186, 30);
+	tone(TONE_PIN, 1047, 30);
+	tone(TONE_PIN, 2093, 30);
+	tone(TONE_PIN, 4186, 30);
 
 	myGLCD.setColor(255, 255, 255);
 	myGLCD.drawRoundRect (x1, y1, x2, y2);
