@@ -43,6 +43,8 @@ ILI9325C_tft  myGLCD(ILI9325C, PC_6, PC_5, PC_7, PC_4);
 void setup()
 {
   randomSeed(analogRead(0));
+
+  tone(PD_0, 1000, 500);
   
 // Setup the LCD
   myGLCD.InitLCD();
@@ -343,6 +345,6 @@ void loop()
   myGLCD.print("Runtime: (msecs)", CENTER, 210);
   myGLCD.printNumI(millis(), CENTER, 225);
   
-  delay (10000);
+  delay(5000);
 }
 
