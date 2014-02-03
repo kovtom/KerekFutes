@@ -246,15 +246,17 @@ void ILI9325C_tft::fillRect(int x1, int y1, int x2, int y2)
 	{
 		swap(int, y1, y2);
 	}
-	if (display_transfer_mode==16)
-	{
-		cbi(P_CS, B_CS);
-		setXY(x1, y1, x2, y2);
-		sbi(P_RS, B_RS);
-		_fast_fill_16(fch,fcl,((long(x2-x1)+1)*(long(y2-y1)+1)));
-		sbi(P_CS, B_CS);
-	}
-	else if ((display_transfer_mode==8) and (fch==fcl))
+	//Nem kell
+//	if (display_transfer_mode==16)
+//	{
+//		cbi(P_CS, B_CS);
+//		setXY(x1, y1, x2, y2);
+//		sbi(P_RS, B_RS);
+//		_fast_fill_16(fch,fcl,((long(x2-x1)+1)*(long(y2-y1)+1)));
+//		sbi(P_CS, B_CS);
+//	}
+//	else if ((display_transfer_mode==8) and (fch==fcl))
+	if ((display_transfer_mode==8) and (fch==fcl))
 	{
 		cbi(P_CS, B_CS);
 		setXY(x1, y1, x2, y2);
@@ -380,7 +382,8 @@ void ILI9325C_tft::fillCircle(int x, int y, int radius)
 
 void ILI9325C_tft::clrScr()
 {
-	long i;
+	//Nem hasznalt
+	//long i;
 	
 	cbi(P_CS, B_CS);
 	clrXY();
@@ -412,13 +415,15 @@ void ILI9325C_tft::fillScr(word color)
 	{
 		for (i=0; i<((disp_x_size+1)*(disp_y_size+1)); i++)
 		{
-			if (display_transfer_mode!=1)
+			//Mivel a alabbi else nem fut le az if sem kell
+//			if (display_transfer_mode!=1)
 				LCD_Writ_Bus(ch,cl,display_transfer_mode);
-			else
-			{
-				LCD_Writ_Bus(1,ch,display_transfer_mode);
-				LCD_Writ_Bus(1,cl,display_transfer_mode);
-			}
+			//Ez elvileg nem fut le
+//			else
+//			{
+//				LCD_Writ_Bus(1,ch,display_transfer_mode);
+//				LCD_Writ_Bus(1,cl,display_transfer_mode);
+//			}
 		}
 	}
 	sbi(P_CS, B_CS);
@@ -544,6 +549,7 @@ void ILI9325C_tft::drawHLine(int x, int y, int l)
 	}
 	cbi(P_CS, B_CS);
 	setXY(x, y, x+l, y);
+
 	if ((display_transfer_mode==8) and (fch==fcl))
 	{
 		sbi(P_RS, B_RS);
@@ -710,7 +716,7 @@ void ILI9325C_tft::rotateChar(byte c, int x, int y, int pos, int deg)
 #endif
 }
 
-void ILI9325C_tft::print(char *st, int x, int y, int deg)
+void ILI9325C_tft::print(const char *st, int x, int y, int deg)
 {
 	int stl, i;
 
@@ -831,7 +837,7 @@ void ILI9325C_tft::printNumF(double num, byte dec, int x, int y, char divider, i
 
 	if (divider != '.')
 	{
-		for (int i=0; i<sizeof(st); i++)
+		for (unsigned int i=0; i<sizeof(st); i++)
 			if (st[i]=='.')
 				st[i]=divider;
 	}
@@ -841,13 +847,13 @@ void ILI9325C_tft::printNumF(double num, byte dec, int x, int y, char divider, i
 		if (neg)
 		{
 			st[0]='-';
-			for (int i=1; i<sizeof(st); i++)
+			for (unsigned int i=1; i<sizeof(st); i++)
 				if ((st[i]==' ') || (st[i]=='-'))
 					st[i]=filler;
 		}
 		else
 		{
-			for (int i=0; i<sizeof(st); i++)
+			for (unsigned int i=0; i<sizeof(st); i++)
 				if (st[i]==' ')
 					st[i]=filler;
 		}
@@ -1047,15 +1053,16 @@ inline void write_byte_hi(unsigned char ch)
 
 void ILI9325C_tft::LCD_Writ_Bus(char VH,char VL, byte mode)
 {   
-	switch (mode)
-	{
-	case 8:
+	//Nem kell
+//	switch (mode)
+//	{
+//	case 8:
 		write_byte_hi(VH);
 		pulse_low(P_WR, B_WR);
 		write_byte_hi(VL);
 		pulse_low(P_WR, B_WR);
-		break;
-	}
+//		break;
+//	}
 }
 
 void ILI9325C_tft::_set_direction_registers(byte mode)
@@ -1063,7 +1070,7 @@ void ILI9325C_tft::_set_direction_registers(byte mode)
 	ROM_GPIOPinTypeGPIOOutput(GPIO_PORTB_BASE, 0xff);
 }
 
-void ILI9325C_tft::_fast_fill_16(int ch, int cl, long pix){}
+//void ILI9325C_tft::_fast_fill_16(int ch, int cl, long pix){}
 
 /*
 void ILI9325C_tft::_fast_fill_16(int ch, int cl, long pix)

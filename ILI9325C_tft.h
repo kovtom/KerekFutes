@@ -52,9 +52,11 @@
 
 #define ILI9325C		3
 
-#define SERIAL_4PIN		4
-#define SERIAL_5PIN		5
-#define LATCHED_16		17
+// Nem hasznalt
+//#define SERIAL_4PIN		4
+//#define SERIAL_5PIN		5
+//#define LATCHED_16		17
+
 
 //*********************************
 // COLORS
@@ -113,7 +115,7 @@ class ILI9325C_tft
 		void setBackColor(byte r, byte g, byte b);
 		void setBackColor(uint32_t color);
 		word getBackColor();
-		void print(char *st, int x, int y, int deg=0);
+		void print(const char *st, int x, int y, int deg=0);
 		void print(String st, int x, int y, int deg=0);
 		void printNumI(long num, int x, int y, int length=0, char filler=' ');
 		void printNumF(double num, byte dec, int x, int y, char divider='.', int length=0, char filler=' ');
@@ -162,7 +164,8 @@ class ILI9325C_tft
 		void clrXY();
 		void rotateChar(byte c, int x, int y, int pos, int deg);
 		void _set_direction_registers(byte mode);
-		void _fast_fill_16(int ch, int cl, long pix);
+		//Nem kell
+		//void _fast_fill_16(int ch, int cl, long pix);
 		void _fast_fill_8(int ch, long pix);
 		void _convert_float(char *buf, double num, int width, byte prec);
 };

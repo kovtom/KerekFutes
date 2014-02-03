@@ -8,6 +8,7 @@
 #define cbi(reg, mask) GPIOPinWrite(reg, mask, 0)
 #define sbi(reg, mask) GPIOPinWrite(reg, mask, mask)
 #define rbi(reg, mask) GPIOPinRead(reg, mask)
+
 #define pulse_high(reg, bitmask) { sbi(reg, bitmask); cbi(reg, bitmask); }
 #define pulse_low(reg, bitmask) { cbi(reg, bitmask); sbi(reg, bitmask); }
 
