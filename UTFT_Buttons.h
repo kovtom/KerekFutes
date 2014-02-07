@@ -21,17 +21,11 @@
 #ifndef UTFT_Buttons_h
 #define UTFT_Buttons_h
 
-#if defined(__AVR__)
-	#include "Arduino.h"
-#elif defined(__PIC32MX__)
-	#include "WProgram.h"
-#elif defined(__arm__)
-	#include "Arduino.h"
-#endif
 
-#include <UTFT.h>
-#include <UTouch.h>
-#if ((!defined(UTFT_VERSION)) || (UTFT_VERSION<241))
+#include "ILI9325C_tft.h"
+#include "UTouch.h"
+
+#if ((!defined(ILI9325C_tft_VERSION)) || (ILI9325C_tft_VERSION<241))
 	#error : You will need UTFT v2.41 or higher to use this add-on library...
 #endif
 
@@ -56,7 +50,7 @@ typedef struct
 class UTFT_Buttons
 {
 	public:
-		UTFT_Buttons(UTFT *ptrUTFT, UTouch *ptrUTouch);
+		UTFT_Buttons(ILI9325C_tft *ptrUTFT, UTouch *ptrUTouch);
 
 		int		addButton(uint16_t x, uint16_t y, uint16_t width, uint16_t height, char *label, uint16_t flags=0);
 		int		addButton(uint16_t x, uint16_t y, uint16_t width, uint16_t height, bitmapdatatype data, uint16_t flags=0);
@@ -74,7 +68,7 @@ class UTFT_Buttons
 		void	setButtonColors(word atxt, word iatxt, word brd, word brdhi, word back);
 
 	protected:
-		UTFT		*_UTFT;
+		ILI9325C_tft	*_UTFT;
 		UTouch		*_UTouch;
 		button_type	buttons[MAX_BUTTONS];
 		word		_color_text, _color_text_inactive, _color_background, _color_border, _color_hilite;

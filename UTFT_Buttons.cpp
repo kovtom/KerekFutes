@@ -19,10 +19,10 @@
 */
 
 #include "UTFT_Buttons.h"
-#include <UTFT.h>
-#include <UTouch.h>
+#include "ILI9325C_tft.h"
+#include "UTouch.h"
 
-UTFT_Buttons::UTFT_Buttons(UTFT *ptrUTFT, UTouch *ptrUTouch)
+UTFT_Buttons::UTFT_Buttons(ILI9325C_tft *ptrUTFT, UTouch *ptrUTouch)
 {
 	_UTFT = ptrUTFT;
 	_UTouch = ptrUTouch;

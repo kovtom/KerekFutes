@@ -14,7 +14,7 @@
 #include "UTouch.h"
 #include "Fonts.h"
 #include "ILI9325C_tft.h"
-#include "UTouch.h"
+#include "UTFT_Buttons.h"
 
 // Declare which fonts we will be using
 //extern uint8_t SmallFont[];
