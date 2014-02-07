@@ -59,7 +59,7 @@ char stLast[20]="";
 
 //
 //Welcome screen varakozasai ido msec
-const unsigned int WELCOME_SRC_TIMEOUT = 1;
+const unsigned int WELCOME_SRC_TIMEOUT = 1000;
 
 
 /*************************
@@ -75,7 +75,7 @@ void setup()
 	myTouch.InitTouch();
 	myTouch.setPrecision(PREC_MEDIUM);
 	
-	//welcomeScreen();
+	welcomeScreen();
 
 	myGLCD.setFont(SmallFont);
 	myGLCD.clrScr();
@@ -104,7 +104,7 @@ void welcomeScreen()
 	for(int i = 1; i < 319; i += 2)
 	{
 		myGLCD.drawLine(i,202,i,208);
-		delay(10);
+		delay(20);
 	}
 	delay(WELCOME_SRC_TIMEOUT);
 	myGLCD.clrScr();
