@@ -50,6 +50,10 @@
 #define PORTRAIT 0
 #define LANDSCAPE 1
 
+#define HORIZONTAL 0
+#define VERTICAL 1
+
+
 #define ILI9325C		3
 
 // Nem hasznalt
@@ -101,9 +105,11 @@ class ILI9325C_tft
 		void clrScr();
 		void drawPixel(int x, int y);
 		void drawLine(int x1, int y1, int x2, int y2);
+		void drawLineBold(int x1, int y1, int x2, int y2, int width);
 		void fillScr(byte r, byte g, byte b);
 		void fillScr(word color);
 		void drawRect(int x1, int y1, int x2, int y2);
+		void drawRectBold(int x1, int y1, int x2, int y2, int width);
 		void drawRoundRect(int x1, int y1, int x2, int y2);
 		void fillRect(int x1, int y1, int x2, int y2);
 		void fillRoundRect(int x1, int y1, int x2, int y2);
