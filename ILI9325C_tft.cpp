@@ -196,15 +196,6 @@ void ILI9325C_tft::clrXY()
 		setXY(0,0,disp_y_size,disp_x_size);
 }
 
-void ILI9325C_tft::drawRectBold(int x1, int y1, int x2, int y2, int width)
-{
-	for(int i = 0; i < width; i++)
-	{
-		drawRect(x1+i,y1+i,x2-i,y2-i);
-	}
-}
-
-
 void ILI9325C_tft::drawRect(int x1, int y1, int x2, int y2)
 {
 	if (x1>x2)
@@ -491,23 +482,6 @@ void ILI9325C_tft::drawPixel(int x, int y)
 	setPixel((fch<<8)|fcl);
 	sbi(P_CS, B_CS);
 	clrXY();
-}
-
-void ILI9325C_tft::drawLineBold(int x1, int y1, int x2, int y2, int width)
-{
-	
-	if(x1==x2 || y1==y2)
-	{
-		for(int i = 0; i < width; i++)
-		{
-			if(x1==x2)
-				drawLine(x1+i,y1,x2+i,y2);
-			else
-				drawLine(x1,y1+i,x2,y2+i);
-		}
-	} else {
-		drawPixel(x1,y1);
-	}
 }
 
 void ILI9325C_tft::drawLine(int x1, int y1, int x2, int y2)

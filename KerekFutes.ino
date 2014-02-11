@@ -79,8 +79,7 @@ void setup()
 
 	myGLCD.setFont(SmallFont);
 	myGLCD.clrScr();
-	myButtons.setTextFont(DotMatrix_M);
-	myButtons.setButtonColors(VGA_BLUE, VGA_GRAY, VGA_WHITE, VGA_PURPLE, VGA_YELLOW);
+	myButtons.setTextFont(BigFont);
 }
 
 /*************************
@@ -112,95 +111,39 @@ void welcomeScreen()
 	tone(TONE_PIN, 1000, 50);
 }
 
-void mainScreen()
-{
-	myGLCD.fillScr(VGA_BLUE);
-	myGLCD.setBackColor(VGA_BLUE);
-	myGLCD.setColor(VGA_YELLOW);
-	//Keret
-	myGLCD.drawRectBold(0,0,319,239,3);
-	//Bal dobozok
-	myGLCD.drawLineBold(110,0,110,239,3);
-	myGLCD.drawLineBold(0,59,110,59,3);
-	myGLCD.drawLineBold(0,118,110,118,3);
-	myGLCD.drawLineBold(0,177,110,177,3);
-
-	myGLCD.drawRect(0,0,20,20);
-	myGLCD.drawRect(0,59,20,79);
-	myGLCD.drawRect(0,118,20,138);
-	myGLCD.drawRect(0,177,20,197);
-
-	myGLCD.drawRect(70,0,110,20);
-	myGLCD.drawRect(70,59,110,79);
-	myGLCD.drawRect(70,118,110,138);
-	myGLCD.drawRect(70,177,110,197);
-
-	//Teljesitmeny bar
-	myGLCD.drawRectBold(110,0,130,239,3);
-
-	myGLCD.setFont(BigFont);
-	myGLCD.printChar('1',4,3);
-	myGLCD.printChar('2',4,62);
-	myGLCD.printChar('3',4,121);
-	myGLCD.printChar('4',4,180);
-
-	myGLCD.setFont(SmallFont);
-	myGLCD.print("80'C",75,6);
-	myGLCD.print("80'C",75,65);
-	myGLCD.print("80'C",75,124);
-	myGLCD.print("80'C",75,183);
-
-	myGLCD.setFont(DotMatrix_M);
-	myGLCD.print("78'C", 20, 30);
-	myGLCD.print("78'C", 20, 89);
-	myGLCD.print("78'C", 20, 148);
-	myGLCD.print("78'C", 20, 207);
-
-	//Time
-	myGLCD.print("TIME", 190, 20);
-	myGLCD.print("07:43", 180, 60);
-}
 
 void loop()
 {
-	mainScreen();
-
 	int but1, pressed_button;
-	boolean but1StateStop = false;
 	boolean default_colors = true;
 
-	but1 = myButtons.addButton( 140, 140, 167, 87, "START");
+	but1 = myButtons.addButton( 10,  20, 300,  30, "Button 1");
 
 	unsigned long prevTime = 0;
 
 	myButtons.drawButtons();
 
+	myGLCD.print("You pressed:", 110, 205);
+	myGLCD.setColor(VGA_BLACK);
+	myGLCD.setBackColor(VGA_WHITE);
+	myGLCD.print("None", 110, 220);
+
 	while(1) 
 	{	
 		if (myTouch.dataAvailable() == true && millis() > prevTime)
 		{
-			prevTime = millis() + 500;
+			prevTime = millis() + 100;
 			pressed_button = myButtons.checkButtons();
 
 			if (pressed_button==but1)
-			{	
+			{
 				tone(TONE_PIN, 2500, 100);
-				if(but1StateStop)
-				{
-					myGLCD.setColor(VGA_BLUE);
-					myGLCD.drawRectBold(137,137,310,230,10);
-					myButtons.relabelButton(but1, "START", true);
-					but1StateStop = false;
 
-				} else {
-					myButtons.relabelButton(but1, "STOP", true);
-					myGLCD.setColor(VGA_RED);
-					myGLCD.drawRectBold(137,137,310,230,10);
-					but1StateStop = true;
-				}
+				myGLCD.print("Button 1", 110, 220);
 			}
 			else
 			{
+				myGLCD.print("None    ", 110, 220);
 			}
 		}
 	}
