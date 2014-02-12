@@ -10,8 +10,6 @@
 // numbers in the setup.
 //
 
-#include <stdlib.h>
-#include <stdio.h>
 #include "UTouch.h"
 #include "Fonts.h"
 #include "ILI9325C_tft.h"
