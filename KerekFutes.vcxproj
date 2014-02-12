@@ -41,7 +41,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(ProjectDir);c:\Users\tomi\Documents\energia-0101E0011\hardware\lm4f\cores\lm4f;c:\Users\tomi\Documents\energia-0101E0011\hardware\lm4f\variants\stellarpad;c:\Users\tomi\Documents\energia-0101E0011\/hardware/tools/lm4f\lib\gcc\arm-none-eabi\4.7.1\include;c:\Users\tomi\Documents\energia-0101E0011\/hardware/tools/lm4f\arm-none-eabi\include;c:\Users\tomi\Documents\energia-0101E0011\/hardware/tools/lm4f\arm-none-eabi\include\sys;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>c:\Users\tomi\Documents\energia-0101E0011\hardware\lm4f\cores\lm4f;c:\Users\tomi\Documents\energia-0101E0011\hardware\lm4f\variants\stellarpad;c:\Users\tomi\Documents\energia-0101E0011\/hardware/tools/lm4f\lib\gcc\arm-none-eabi\4.7.1\include;c:\Users\tomi\Documents\energia-0101E0011\/hardware/tools/lm4f\arm-none-eabi\include;c:\Users\tomi\Documents\energia-0101E0011\/hardware/tools/lm4f\arm-none-eabi\include\sys;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ForcedIncludeFiles>C:\Users\tomi\Documents\Energia\KerekFutes\Visual Micro\.KerekFutes.vsarduino.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <IgnoreStandardIncludePath>true</IgnoreStandardIncludePath>
       <PreprocessorDefinitions>ARDUINO=101;ARDUINO_MAIN;printf=iprintf;__MSP430__;__msp430__;F_CPU=80000000L;__cplusplus;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -69,6 +69,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="buttons.h" />
     <ClInclude Include="Fonts.h" />
     <ClInclude Include="HW_LM4F_defines.h" />
     <ClInclude Include="ILI9325C_tft.h" />
@@ -78,6 +79,7 @@
     <ClInclude Include="Visual Micro\.KerekFutes.vsarduino.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="buttons.cpp" />
     <ClCompile Include="Fonts.c" />
     <ClCompile Include="ILI9325C_tft.cpp" />
     <ClCompile Include="UTFT_Buttons.cpp" />

@@ -39,6 +39,9 @@
     <ClInclude Include="UTFT_Buttons.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="buttons.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ILI9325C_tft.cpp">
@@ -51,6 +54,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="UTFT_Buttons.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="buttons.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
