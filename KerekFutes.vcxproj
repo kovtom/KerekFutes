@@ -73,7 +73,6 @@
     <ClInclude Include="Fonts.h" />
     <ClInclude Include="HW_LM4F_defines.h" />
     <ClInclude Include="ILI9325C_tft.h" />
-    <ClInclude Include="UTFT_Buttons.h" />
     <ClInclude Include="UTouch.h" />
     <ClInclude Include="UTouchCD.h" />
     <ClInclude Include="Visual Micro\.KerekFutes.vsarduino.h" />
@@ -82,7 +81,6 @@
     <ClCompile Include="buttons.cpp" />
     <ClCompile Include="Fonts.c" />
     <ClCompile Include="ILI9325C_tft.cpp" />
-    <ClCompile Include="UTFT_Buttons.cpp" />
     <ClCompile Include="UTouch.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

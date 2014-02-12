@@ -16,28 +16,37 @@ class Point_t {
 private:
 	int x;
 	int y;
-public:
+protected:
 	Point_t(int x = 0,int y = 0) {this->x = x; this->y = y;}
-	void setX(int x_) {x = x_;}
-	void setY(int y_) {y = y_;}
-	int getX(){return x;}
-	int getY(){return y;}
+	virtual void setX(int x_) {x = x_;}
+	virtual void setY(int y_) {y = y_;}
+	virtual int getX(){return x;}
+	virtual int getY(){return y;}
 };
 
-class Box_t : public Point_t {
+class Box_t : private Point_t {
 private:
-	ILI9325C_tft * pScreen;
 	int width;
 	int height;
 	int think;
 	int primFrameColor;
 	int secFrameColor;
 	uint8_t frameColorState;
+	int normBackgroundColor;
+	int invBackgroundColor;
+	uint8_t * font;
+	char * text;
+	int tx, ty;
+	uint8_t textLength;
+protected:
+	ILI9325C_tft * pScreen;
 public:
 	Box_t(	ILI9325C_tft * screenP_,
 		int x_ = 0, int y_ = 0,
-		int w_ = 0, int h_ = 0, int think_ = 1,
-		int primFrameColor_ = VGA_BLUE, int secFrameColor_ = VGA_GREEN
+		int w_ = 100, int h_ = 20, int think_ = 1,
+		int primFrameColor_ = VGA_BLUE, int secFrameColor_ = VGA_BLUE,
+		int normBackgroundColor_ = VGA_BLUE, int invBackgroundColor_ = VGA_GREEN,
+		uint8_t * font_ = 0, char * text_ = 0, int tx_ = CENTER, int ty_ = CENTER
 		) : Point_t(x_, y_)
 	{
 		pScreen = screenP_;
@@ -46,17 +55,48 @@ public:
 		think = think_;
 		primFrameColor = primFrameColor_;
 		secFrameColor = secFrameColor_;
+		normBackgroundColor = normBackgroundColor_;
+		invBackgroundColor = invBackgroundColor_;
+
+		font = font_;
+
+		textLength = 0;
+		char * ptext = text_;
+		while(*ptext) {
+			ptext++; textLength++;
+		}
+		text = new char[ textLength + 1 ];
+
+		uint8_t idx = 0;
+		while(*text_) {
+			text[idx] = *text_;
+			text_++; idx++;
+		}
+		text[idx] = 0;
+		tx = tx_;
+		ty = ty_;
 	}
+	~Box_t() { delete [] text; }
+	void draw();
+	void draw(int color);
+	void drawNormal();
+	void drawInvert();
+	int getBoxX() { return getX(); }
+	int getBoxY() { return getY(); }
 	int getWidth() { return width; }
 	int getHeight() { return height; }
 	int getThink() { return think; }
-	void draw();
-	void draw(int color);
 	int getPrimFrameColor() { return primFrameColor; }
 	int getSecFrameColor() { return secFrameColor; }
+	int getNormBackgroundColor() { return normBackgroundColor; }
+	int getInvBackgroundColor() { return invBackgroundColor; }
+	boolean pointInBox(int x, int y);
+	char * getText() { return text; }
+	uint8_t * getFont() { return font; }
+	void printText();
 };
 
-class Press_t
+class Press_t : private Point_t
 {
 private:
 	UTouch * pTouch;
@@ -64,9 +104,9 @@ private:
 	PRESS_TYPE prevPressState;
 	PRESS_TYPE pressEvent;
 	boolean reqClear;
-	void refresh();
+	void refreshTouchEvent();
 public:
-	Press_t(UTouch * pTouch_) {
+	Press_t(UTouch * pTouch_) : Point_t() {
 		pTouch = pTouch_;
 		prevPressTime = 0;
 		prevPressState = RELEASED;
@@ -74,7 +114,36 @@ public:
 		reqClear = false;
 	}
 	boolean getPressEvent(PRESS_TYPE press);
+	int getPressX() { return getX();}
+	int getPressY() { return getY();}
 };
 
+class Button_t : public Box_t , public Press_t 
+{
+private:
+	PRESS_TYPE prevState;
+	PRESS_TYPE buttonEvent;
+public:
+	Button_t(
+		ILI9325C_tft * pScreen_,
+		UTouch * pTouch_,
+		int x_, int y_ ,
+		int width_, int height_, int think_, 
+		int primFrameColor_, int secFrameColor_,
+		int normBackgroundColor_, int invBackgroundColor_,
+		uint8_t * font_,
+		char * text_ = 0, int tx_ = 0, int ty_ = 0
+		) :
+	 Box_t(pScreen_, x_, y_, width_, height_, think_,
+		 primFrameColor_, secFrameColor_, normBackgroundColor_, invBackgroundColor_,
+		 font_,
+		 text_, tx_, ty_ ),
+	 Press_t(pTouch_)
+	{ 
+		buttonEvent = NOT_PRESS;
+		prevState = NOT_PRESS;
+	}
+	PRESS_TYPE getButtonEvent();
+};
 #endif
 

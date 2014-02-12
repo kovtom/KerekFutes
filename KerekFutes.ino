@@ -13,7 +13,6 @@
 #include "UTouch.h"
 #include "Fonts.h"
 #include "ILI9325C_tft.h"
-#include "UTFT_Buttons.h"
 #include "buttons.h"
 
 // Declare which fonts we will be using
@@ -119,22 +118,38 @@ void welcomeScreen()
 
 void loop()
 {
+	Button_t button(&myGLCD, &myTouch, 100, 100, 100, 60, 2, 
+		VGA_WHITE, VGA_WHITE, VGA_BLUE, VGA_RED,
+		DotMatrix_M, "ABC", CENTER, CENTER );
 
-	Box_t box(&myGLCD,100,100,100,100,10, VGA_BLUE, VGA_RED);
-	box.draw(box.getPrimFrameColor());
-	Press_t press(&myTouch);
+	Button_t button2 (&myGLCD, &myTouch, 0, 0, 100, 60, 2, 
+		VGA_WHITE, VGA_WHITE, VGA_BLUE, VGA_RED,
+		DotMatrix_M, "EFG", CENTER, CENTER );
 
+	Button_t * button3;
+	button3 = new Button_t(&myGLCD, &myTouch, 180, 0, 100, 60, 2, 
+		VGA_WHITE, VGA_WHITE, VGA_BLUE, VGA_RED,
+		DotMatrix_M, "EFG", CENTER, CENTER );
+
+
+	button.drawNormal();
+	button2.drawNormal();
+	button3->drawNormal();
+
+	int i,j,k;
+	i = j = k = 0;
 	while(1) 
 	{
-		if( press.getPressEvent(PRESSED)) {
-			tone(TONE_PIN, 1000, 50);
-			box.draw(box.getSecFrameColor());
-		}
-		else if(press.getPressEvent(RELEASED)) {
-			//tone(TONE_PIN, 3000, 50);
-			box.draw(box.getPrimFrameColor());
-		}
-
+		PRESS_TYPE tmp = button.getButtonEvent();
+		PRESS_TYPE tmp2 = button2.getButtonEvent();
+		PRESS_TYPE tmp3 = button3->getButtonEvent();
+		myGLCD.setFont(SmallFont);
+		if(tmp == RELEASED)
+			myGLCD.printNumI(i++, 200,180,3);
+		if(tmp2 == RELEASED)
+			myGLCD.printNumI(j++, 200,200,3);
+		if(tmp3 == RELEASED)
+			myGLCD.printNumI(k++, 200,220,3);
 	}
 
 }

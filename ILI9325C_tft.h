@@ -43,6 +43,9 @@
 
 #define ILI9325C_tft_VERSION  241
 
+#define SCREEN_MAX_X 319
+#define SCREEN_MAX_Y 239
+
 #define LEFT 0
 #define RIGHT 9999
 #define CENTER 9998

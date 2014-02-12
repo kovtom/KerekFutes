@@ -36,9 +36,6 @@
     <ClInclude Include="HW_LM4F_defines.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="UTFT_Buttons.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="buttons.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -51,9 +48,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="UTouch.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="UTFT_Buttons.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="buttons.cpp">
