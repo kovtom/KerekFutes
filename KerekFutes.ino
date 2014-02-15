@@ -10,10 +10,12 @@
 // numbers in the setup.
 //
 
+#include <itoa.h>
 #include "UTouch.h"
 #include "Fonts.h"
 #include "ILI9325C_tft.h"
 #include "buttons.h"
+
 
 // Declare which fonts we will be using
 //extern uint8_t SmallFont[];
@@ -60,15 +62,103 @@ char stLast[20]="";
 //Welcome screen varakozasai ido msec
 const unsigned int WELCOME_SRC_TIMEOUT = 1;
 
+//
+// Allando nyomogombok
+//
+
+//Homerseklet kijelzo gombok
+const int FOREGROUND = VGA_WHITE;
+const int BACKGROUND = VGA_BLUE;
+const int BUTTON_NORM_COLOR = VGA_BLUE;
+const int BUTTON_INV_COLOR = VGA_RED;
+
+//Ennyi parnank van
+const uint8_t MAX_TAGNUMBER = 3; 
+const uint8_t ALL_NUMBERS = 4;
+
+const int tempsButtY = 30;
+const uint32_t menuTimeout = 10000; //msec
+
+Button_t temperature1(&myGLCD, &myTouch,
+	0, 0, 110, 59, 1,
+	FOREGROUND, FOREGROUND, BUTTON_NORM_COLOR, BUTTON_INV_COLOR,
+	FOREGROUND, DotMatrix_M, "`C", CENTER, tempsButtY, 1);
+
+Button_t temperature2(&myGLCD, &myTouch,
+	0, 60, 110, 59, 1,
+	FOREGROUND, FOREGROUND, BUTTON_NORM_COLOR, BUTTON_INV_COLOR,
+	FOREGROUND, DotMatrix_M, "`C", CENTER, tempsButtY, 1);
+
+Button_t temperature3(&myGLCD, &myTouch,
+	0, 120, 110, 59, 1,
+	FOREGROUND, FOREGROUND, BUTTON_NORM_COLOR, BUTTON_INV_COLOR,
+	FOREGROUND, DotMatrix_M, "`C", CENTER, tempsButtY, 1);
+
+Button_t temperature4(&myGLCD, &myTouch,
+	0, 180, 110, 59, 1,
+	FOREGROUND, FOREGROUND, BUTTON_NORM_COLOR, BUTTON_INV_COLOR,
+	FOREGROUND, DotMatrix_M, "`C", CENTER, tempsButtY, 1);
+
+//A beallitott homerseklet dobozok
+Box_t setTemperature1(&myGLCD,
+	65, 0, 45, 20, 1,
+	FOREGROUND, FOREGROUND, BUTTON_NORM_COLOR, BUTTON_INV_COLOR,
+	FOREGROUND, SmallFont, "`C", CENTER, CENTER, 1);
+
+Box_t setTemperature2(&myGLCD,
+	65, 60, 45, 20, 1,
+	FOREGROUND, FOREGROUND, BUTTON_NORM_COLOR, BUTTON_INV_COLOR,
+	FOREGROUND, SmallFont, "`C", CENTER, CENTER, 1);
+
+Box_t setTemperature3(&myGLCD,
+	65, 120, 45, 20, 1,
+	FOREGROUND, FOREGROUND, BUTTON_NORM_COLOR, BUTTON_INV_COLOR,
+	FOREGROUND, SmallFont, "`C", CENTER, CENTER, 1);
+
+Box_t setTemperature4(&myGLCD,
+	65, 180, 45, 20, 1,
+	FOREGROUND, FOREGROUND, BUTTON_NORM_COLOR, BUTTON_INV_COLOR,
+	FOREGROUND, SmallFont, "`C", CENTER, CENTER, 1);
+
+
+//Homersekleti erteket kijelzo nyomogombok mutato tombje
+Button_t * temperatures[] = {
+	&temperature1,
+	&temperature2,
+	&temperature3,
+	&temperature4
+};
+
+//A beallitott homersekleti dobozok tombje
+Box_t * setTemperatures[] = {
+	&setTemperature1,
+	&setTemperature2,
+	&setTemperature3,
+	&setTemperature4
+};
+
+class EnvironmentVars_S {
+public:
+	uint8_t temperatures[4];
+	uint8_t setTemperatures[5];
+};
+
+EnvironmentVars_S envVars;
 
 /*************************
 **  Required functions  **
 *************************/
 
-#define DEBUGLEVEL 1
+#define DEBUGLEVEL 0
 
 void setup()
 {
+	//Alap adatok beallitasa
+	for(uint8_t i = 0; i < 4; i++) {
+		envVars.temperatures[i] = 0;
+		envVars.setTemperatures[i] = 80;
+	}
+	envVars.setTemperatures[ALL_NUMBERS] = 80;
 #if DEBUGLEVEL > 0
 	Serial.begin(115200);
 #endif
@@ -83,7 +173,8 @@ void setup()
 
 	myGLCD.setFont(SmallFont);
 	myGLCD.clrScr();
-	//myButtons.setTextFont(BigFont);
+	
+	drawScreen();
 }
 
 /*************************
@@ -115,41 +206,179 @@ void welcomeScreen()
 	tone(TONE_PIN, 1000, 50);
 }
 
-
 void loop()
 {
-	Button_t button(&myGLCD, &myTouch, 100, 100, 100, 60, 2, 
-		VGA_WHITE, VGA_WHITE, VGA_BLUE, VGA_RED,
-		DotMatrix_M, "ABC", CENTER, CENTER );
+	for(uint8_t i = 0; i < 4; i++) {
+		PRESS_TYPE press = temperatures[i]->getButtonEvent();
+		if(press == RELEASED || press == OTHER_RELEASED) {
+			//Belepunk a temp setting menube
+			if(press == RELEASED) {
+				temperatureSetting(i);
+			}
+			drawNumbers(i);
+			drawSetTemperatures(setTemperatures[i], i);
+		}
+	}
+}
 
-	Button_t button2 (&myGLCD, &myTouch, 0, 0, 100, 60, 2, 
-		VGA_WHITE, VGA_WHITE, VGA_BLUE, VGA_RED,
-		DotMatrix_M, "EFG", CENTER, CENTER );
+//A kepernyo ujrarajzolasa
+void drawScreen() {
+	for(uint8_t i = 0; i < 4; i++) {
+		drawTemperatures(temperatures[i]);
+		drawSetTemperatures(setTemperatures[i], i);
+	}
+	drawNumbers(ALL_NUMBERS);
+}
 
-	Button_t * button3;
-	button3 = new Button_t(&myGLCD, &myTouch, 180, 0, 100, 60, 2, 
-		VGA_WHITE, VGA_WHITE, VGA_BLUE, VGA_RED,
-		DotMatrix_M, "EFG", CENTER, CENTER );
+//Felugro ablak a homerseklet beallitasara
+void temperatureSetting(uint8_t tagNumber) {
+	//Felugro ablak definicioja
+	//Keret
+	Box_t frame(&myGLCD,
+		20, 20, 280, 200, 3,
+		FOREGROUND, FOREGROUND, BUTTON_NORM_COLOR, BUTTON_INV_COLOR,
+		FOREGROUND, DotMatrix_M, "`C", CENTER, CENTER, 1);
+	Box_t temperatureText(&myGLCD,
+		115, 30, 180, 20, 1,
+		BACKGROUND, FOREGROUND, BUTTON_NORM_COLOR, BUTTON_INV_COLOR,
+		FOREGROUND, BigFont, "Temperature", CENTER, CENTER, 1);
+	Box_t settingText(&myGLCD,
+		115, 56, 115, 20, 1,
+		BACKGROUND, FOREGROUND, BUTTON_NORM_COLOR, BUTTON_INV_COLOR,
+		FOREGROUND, BigFont, "Setting", CENTER, CENTER, 1);	
 
+	frame.setText(envVars.setTemperatures[tagNumber], "`C");
+	frame.drawNormal();
+	temperatureText.drawNormal();
+	settingText.drawNormal();
 
-	button.drawNormal();
-	button2.drawNormal();
-	button3->drawNormal();
+	Button_t tyreNumButton(&myGLCD, &myTouch,
+		25, 25, 80, 50, 1,
+		FOREGROUND, FOREGROUND, BUTTON_NORM_COLOR, BUTTON_INV_COLOR,
+		FOREGROUND, BigFont, ".", CENTER, CENTER, 1);
+	Button_t decButton(&myGLCD, &myTouch,
+		30, 160, 80, 50, 1,
+		FOREGROUND, FOREGROUND, BUTTON_NORM_COLOR, BUTTON_INV_COLOR,
+		FOREGROUND, BigFont, "-", CENTER, CENTER, 1);
+	Button_t incButton(&myGLCD, &myTouch,
+		120, 160, 80, 50, 1,
+		FOREGROUND, FOREGROUND, BUTTON_NORM_COLOR, BUTTON_INV_COLOR,
+		FOREGROUND, BigFont, "+", CENTER, CENTER, 1);
+	Button_t okButton(&myGLCD, &myTouch,
+		210, 160, 80, 50, 1,
+		FOREGROUND, FOREGROUND, BUTTON_NORM_COLOR, BUTTON_INV_COLOR,
+		FOREGROUND, BigFont, "OK", CENTER, CENTER, 1);
 
-	int i,j,k;
-	i = j = k = 0;
-	while(1) 
-	{
-		PRESS_TYPE tmp = button.getButtonEvent();
-		PRESS_TYPE tmp2 = button2.getButtonEvent();
-		PRESS_TYPE tmp3 = button3->getButtonEvent();
-		myGLCD.setFont(SmallFont);
-		if(tmp == RELEASED)
-			myGLCD.printNumI(i++, 200,180,3);
-		if(tmp2 == RELEASED)
-			myGLCD.printNumI(j++, 200,200,3);
-		if(tmp3 == RELEASED)
-			myGLCD.printNumI(k++, 200,220,3);
+	tyreNumButton.setText(tagNumber + 1, "");
+	tyreNumButton.drawNormal();
+
+	incButton.drawNormal();
+	decButton.drawNormal();
+	okButton.drawNormal();
+	
+	uint8_t prevData = 0;
+	uint32_t startTime = millis() + menuTimeout;
+
+	EnvironmentVars_S tempEnv;
+
+	for(uint8_t i = 0; i <=ALL_NUMBERS; i++) {
+		tempEnv.setTemperatures[i] = envVars.setTemperatures[i];
 	}
 
+	while(true) {
+		if(tyreNumButton.getButtonEvent() == RELEASED) {
+			startTime = millis() + menuTimeout;
+			tagNumber++;
+			if(tagNumber <= MAX_TAGNUMBER) {
+				tyreNumButton.setText(tagNumber + 1, "");
+			} else if(tagNumber == ALL_NUMBERS) {
+				tyreNumButton.setText("ALL");
+			} else {
+				tagNumber = 0;
+				tyreNumButton.setText(tagNumber + 1, "");
+			}
+		}
+
+		PRESS_TYPE incB = incButton.getButtonEvent();
+		PRESS_TYPE decB = decButton.getButtonEvent();
+		PRESS_TYPE okB = okButton.getButtonEvent();
+
+		if(incB == RELEASED ) {
+			startTime = millis() + menuTimeout;
+			if(tempEnv.setTemperatures[tagNumber] < 99)
+				tempEnv.setTemperatures[tagNumber]++;
+		}
+		else if(decB == RELEASED ) {
+			startTime = millis() + menuTimeout;
+			if(tempEnv.setTemperatures[tagNumber] > 0)
+				tempEnv.setTemperatures[tagNumber]--;
+		}
+		else if(okB == RELEASED) {
+			if(tagNumber == ALL_NUMBERS) {
+				for(uint8_t i = 0; i <= MAX_TAGNUMBER ; i++) {
+					envVars.setTemperatures[i] = tempEnv.setTemperatures[ALL_NUMBERS];
+					setTemperatures[i]->setText(envVars.setTemperatures[i], "`C");
+				}
+				envVars.setTemperatures[ALL_NUMBERS] = tempEnv.setTemperatures[ALL_NUMBERS];
+			} else {
+				envVars.setTemperatures[tagNumber] = tempEnv.setTemperatures[tagNumber];
+				setTemperatures[tagNumber]->setText(envVars.setTemperatures[tagNumber], "`C");
+			}
+			myGLCD.clrScr();
+			drawScreen();
+			break;
+		}
+		else if(millis() > startTime) {
+			myGLCD.clrScr();
+			drawScreen();
+			break;
+		} else {
+			if(prevData != tempEnv.setTemperatures[tagNumber]) {
+				frame.setText(tempEnv.setTemperatures[tagNumber], "`C");
+				prevData = tempEnv.setTemperatures[tagNumber];
+			}
+		}
+	}
+}
+
+//Kirajzoljuk a szamokat
+void drawNumbers(const uint8_t whichNumber) {
+	if(whichNumber == 0 || whichNumber == ALL_NUMBERS) {
+		Box_t num1(&myGLCD, 0, 0, 20, 20, 1,
+			FOREGROUND, BACKGROUND, BACKGROUND, BACKGROUND,
+			FOREGROUND, BigFont, "1", CENTER, CENTER, 1);
+		num1.drawNormal();
+	}
+
+	if(whichNumber == 1 || whichNumber == ALL_NUMBERS) {
+		Box_t num2(&myGLCD, 0, 60, 20, 20, 1,
+			FOREGROUND, BACKGROUND, BACKGROUND, BACKGROUND,
+			FOREGROUND, BigFont, "2", CENTER, CENTER, 1);
+		num2.drawNormal();
+	}
+
+	if(whichNumber == 2 || whichNumber == ALL_NUMBERS) {
+		Box_t num3(&myGLCD, 0, 120, 20, 20, 1,
+			FOREGROUND, BACKGROUND, BACKGROUND, BACKGROUND,
+			FOREGROUND, BigFont, "3", CENTER, CENTER, 1);
+		num3.drawNormal();
+	}
+
+	if(whichNumber == 3 || whichNumber == ALL_NUMBERS) {
+		Box_t num4(&myGLCD, 0, 180, 20, 20, 1,
+			FOREGROUND, BACKGROUND, BACKGROUND, BACKGROUND,
+			FOREGROUND, BigFont, "4", CENTER, CENTER, 1);
+		num4.drawNormal();
+	}
+}
+
+//Kiirjuk a hofok eretekeket
+void drawTemperatures(Button_t * temperatures) {
+	temperatures->drawNormal();	
+}
+
+//Kirajzoljuk a beallitott homersekleti ertekeket
+void drawSetTemperatures(Box_t * setTemperatures, uint8_t tagNumber) {
+	setTemperatures->setText(envVars.setTemperatures[tagNumber], "`C");
+	setTemperatures->drawNormal();
 }
