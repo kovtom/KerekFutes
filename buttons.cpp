@@ -111,9 +111,18 @@ void Box_t::drawInvert()
 void Box_t::setNormBackgroundColor(int color) {
 	normBackgroundColor = color;
 	//Ha eppen ez a status az aktualis akkor ki is rajzoljuk
-	if(status == NORMAL)
-		drawNormal();
+	//if(status == NORMAL)
+	//	drawNormal();
 }
+
+//Beallit egy uj Inverz hatterszint
+void Box_t::setInvBackgroundColor(int color) {
+	invBackgroundColor = color;
+	//if(status == INVERT)
+	//	drawInvert();
+}
+
+
 
 //Az elso feliratot beallitja
 void Box_t::_setNewText(char * inpText) {
@@ -123,27 +132,29 @@ void Box_t::_setNewText(char * inpText) {
 }
 
 //Regi felirat torlese
-void Box_t::_clearOldTExt() {
-	//Letoroljuk a regi feliratot
-	for(uint8_t i = 0; i < textLength; i++)
-		text[i] = ' ';
-	print();
+void Box_t::_clearOldTExt(boolean clear) {
+	//Letoroljuk a regi feliratot, ha clear true
+	if(clear) {
+		for(uint8_t i = 0; i < textLength; i++)
+			text[i] = ' ';
+		print();
+	}
 	delete [] text;
 }
 
-//Uj feliratot allit be
-void Box_t::setText(char * inpText) {
+//Uj feliratot allit be de a clear alapjan torli/vagy sem az elozot
+void Box_t::setText(char * inpText, boolean clear) {
 	//Letoroljuk a regi feliratot
-	_clearOldTExt();
+	_clearOldTExt(clear);
 	//Beallitjuk az uj feliratot es ki is irjuk
 	_setNewText(inpText);
 	print();
 }
 
 //Uj szamfeliratot allit be a hozzakapcsolt sztringgel
-void Box_t::setText(int number, char * inpText) {
+void Box_t::setText(int number, char * inpText, boolean clear) {
 	//Letoroljuk a regi feliratot
-	_clearOldTExt();
+	_clearOldTExt(clear);
 	//A szamot string-ge alakitjuk
 	char s[10];
 	itoa(number, s, 10);
@@ -189,6 +200,10 @@ boolean Box_t::pointInBox(int x, int y)
 //Kiirja a boxba a text-et
 void Box_t::print()
 {
+	if(status == NORMAL) 
+		pScreen->setBackColor(normBackgroundColor);
+	else
+		pScreen->setBackColor(invBackgroundColor);
 	pScreen->setColor(textColor);
 	pScreen->setFont(font);
 

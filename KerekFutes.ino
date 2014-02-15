@@ -136,11 +136,51 @@ Box_t * setTemperatures[] = {
 	&setTemperature3,
 	&setTemperature4
 };
+ 
+const uint8_t START_STATUS = 0;
+const uint8_t STOP_STATUS = 1;
+const uint8_t ELAPSED_TIME = 0;
+const uint8_t REMAIN_TIME = 1;
+
+//START/STOP gomb
+Button_t startButton(&myGLCD, &myTouch,
+	120, 140, 190, 90, 4,
+	FOREGROUND, FOREGROUND, BUTTON_NORM_COLOR, BUTTON_INV_COLOR,
+	FOREGROUND, DotMatrix_M, "START", CENTER, CENTER, 1);
+
+//TIME button
+Button_t timeButton(&myGLCD, &myTouch,
+	120, 48, 190, 70, 1,
+	FOREGROUND, FOREGROUND, BUTTON_NORM_COLOR, BUTTON_INV_COLOR,
+	FOREGROUND, DotMatrix_M, "00:00", CENTER, CENTER, 1);
 
 class EnvironmentVars_S {
 public:
 	uint8_t temperatures[4];
 	uint8_t setTemperatures[5];
+	//uint8_t timeType;
+	uint32_t startTime;
+	uint32_t timeRawSec;
+	uint8_t sec;
+	uint16_t min;
+	uint8_t startStopStatus;
+	uint8_t timeMode;
+	boolean timeRefreshing;
+	EnvironmentVars_S()
+	{
+		for(uint8_t i = 0; i < 4; i++) {
+			temperatures[i] = 0;
+			setTemperatures[i] = 80;
+		}
+		setTemperatures[ALL_NUMBERS] = 80;
+		startTime = 0;
+		timeRawSec = 0;
+		sec = 0;
+		min = 0;
+		startStopStatus = STOP_STATUS;
+		timeMode = ELAPSED_TIME;
+		timeRefreshing = false;
+	}
 };
 
 EnvironmentVars_S envVars;
@@ -149,19 +189,17 @@ EnvironmentVars_S envVars;
 **  Required functions  **
 *************************/
 
-#define DEBUGLEVEL 0
+#define DEBUGLEVEL 1
 
 void setup()
 {
-	//Alap adatok beallitasa
-	for(uint8_t i = 0; i < 4; i++) {
-		envVars.temperatures[i] = 0;
-		envVars.setTemperatures[i] = 80;
-	}
-	envVars.setTemperatures[ALL_NUMBERS] = 80;
 #if DEBUGLEVEL > 0
 	Serial.begin(115200);
 #endif
+	Serial.println(sizeof(unsigned long));
+	Serial.println(sizeof(unsigned long long));
+	Serial.println(sizeof(unsigned int));
+	Serial.println(sizeof(unsigned char));
 	// Initial setup
 	myGLCD.InitLCD();
 	myGLCD.clrScr();
@@ -174,6 +212,7 @@ void setup()
 	myGLCD.setFont(SmallFont);
 	myGLCD.clrScr();
 	
+
 	drawScreen();
 }
 
@@ -208,6 +247,23 @@ void welcomeScreen()
 
 void loop()
 {
+	if(millis() > envVars.timeRawSec && envVars.startStopStatus == START_STATUS) {
+		envVars.timeRawSec = millis() + 1000;
+		uint32_t sec;
+		sec = (millis() - envVars.startTime) / 1000;
+		envVars.min = sec / 60;
+		envVars.sec = sec - (envVars.min * 60);
+
+		if(sec == (999*60+59)) {
+			envVars.startStopStatus = STOP_STATUS;
+			drawStartStopB(STOP_STATUS);
+		}
+
+		//Frissitettunk
+		envVars.timeRefreshing = true;
+	}
+
+	//Homersekleti beallito gombok lekerdezese
 	for(uint8_t i = 0; i < 4; i++) {
 		PRESS_TYPE press = temperatures[i]->getButtonEvent();
 		if(press == RELEASED || press == OTHER_RELEASED) {
@@ -219,6 +275,27 @@ void loop()
 			drawSetTemperatures(setTemperatures[i], i);
 		}
 	}
+
+	//Start/Stop gomb lekerdezese
+	if(startButton.getButtonEvent() == RELEASED) {
+		if(envVars.startStopStatus == STOP_STATUS) {
+			//Idozitos inditasa
+			envVars.startTime = millis();
+			envVars.startStopStatus = START_STATUS;
+			drawStartStopB(START_STATUS);
+
+		} else {
+			envVars.startStopStatus = STOP_STATUS;
+			drawStartStopB(STOP_STATUS);
+		}
+	}
+
+	//Ha frissult az ido akkor frissitjuk a time buttonon is
+	if(envVars.timeRefreshing) {
+		envVars.timeRefreshing = false;
+		refreshTime();
+	}
+
 }
 
 //A kepernyo ujrarajzolasa
@@ -228,6 +305,9 @@ void drawScreen() {
 		drawSetTemperatures(setTemperatures[i], i);
 	}
 	drawNumbers(ALL_NUMBERS);
+	drawElapsedTime();
+	drawStartStopB(envVars.startStopStatus);
+	drawTimeB();
 }
 
 //Felugro ablak a homerseklet beallitasara
@@ -382,3 +462,62 @@ void drawSetTemperatures(Box_t * setTemperatures, uint8_t tagNumber) {
 	setTemperatures->setText(envVars.setTemperatures[tagNumber], "`C");
 	setTemperatures->drawNormal();
 }
+
+//Kirajzoljuk az Elpsed Time dobozt. Ebben van a start/stop es a Time
+//gomb illetve felirat is.
+void drawElapsedTime() {
+	Box_t elapsedTime(&myGLCD,
+		111, 0, 208, 239, 1,
+		FOREGROUND, FOREGROUND, BUTTON_NORM_COLOR, BUTTON_INV_COLOR,
+		FOREGROUND, BigFont, "Time elapsed", CENTER, 20, 1);
+
+	elapsedTime.drawNormal();
+}
+
+//Kirajzoljuk a start/stop buttont
+void drawStartStopB(uint8_t status) {
+	if(status == STOP_STATUS) {
+		startButton.setNormBackgroundColor(BUTTON_NORM_COLOR);
+		startButton.setInvBackgroundColor(BUTTON_INV_COLOR);
+		startButton.setText("START");
+	} else {
+		startButton.setNormBackgroundColor(BUTTON_INV_COLOR);
+		startButton.setInvBackgroundColor(BUTTON_NORM_COLOR);
+		startButton.setText("STOP");
+	}
+	startButton.drawNormal();
+}
+
+//TimeButton kirajzolasa
+void drawTimeB() {
+	//Elkerjuk az aktualis idoadatokat
+	refreshTime();
+	timeButton.drawNormal();
+}
+
+//A time button idoadatanak frissitese
+void refreshTime() {
+	char s[8];
+	getTimeStr(s);
+
+	timeButton.setText(s, false);
+}
+
+//Az atadott stringe rakja az aktualis envVar idoadatot
+void getTimeStr(char * s) {
+	String s_min(envVars.min);
+	if(envVars.min < 10)
+		s_min = "0" + s_min;
+
+	String s_sec(envVars.sec);
+	if(envVars.sec < 10)
+		s_sec = "0" + s_sec;
+	String concat_s = s_min + ":" + s_sec;
+	concat_s.toCharArray(s,7);
+}
+
+
+
+
+
+

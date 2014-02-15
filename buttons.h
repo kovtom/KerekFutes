@@ -51,7 +51,7 @@ private:
 	uint8_t _textLength(char * inpText);
 	void _copyText(char * inpText);
 	void _setNewText(char * inpText);
-	void _clearOldTExt();
+	void _clearOldTExt(boolean clear);
 	uint8_t priority;
 	BOX_STATUS_TYPE status;
 protected:
@@ -92,9 +92,10 @@ public:
 	char * getText() { return text; }
 	uint8_t * getFont() { return font; }
 	void print();
-	void setText(char * inpText);
-	void setText(int number, char * inpText);
+	void setText(char * inpText, boolean clear = true);
+	void setText(int number, char * inpText, boolean clear = true);
 	void setNormBackgroundColor(int color);
+	void setInvBackgroundColor(int color);
 };
 
 class Press_t : private Point_t
