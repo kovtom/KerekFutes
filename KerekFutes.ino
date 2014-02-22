@@ -57,7 +57,9 @@ int x, y;
 char stCurrent[20]="";
 int stCurrentLen=0;
 char stLast[20]="";
-
+//Konstansok
+const uint8_t numberOfSensors = 4;
+const uint8_t numberOfFETs = numberOfSensors;
 //
 //Welcome screen varakozasai ido msec
 const unsigned int WELCOME_SRC_TIMEOUT = 1;
@@ -136,7 +138,15 @@ Box_t * setTemperatures[] = {
 	&setTemperature3,
 	&setTemperature4
 };
- 
+
+//FET pins tomb
+uint8_t FETouts[] = {
+	PE_4,
+	PE_5,
+	PD_6,
+	PD_7
+};
+
 const uint8_t START_STATUS = 0;
 const uint8_t STOP_STATUS = 1;
 const uint8_t ELAPSED_TIME = 0;
@@ -157,6 +167,8 @@ Button_t timeButton(&myGLCD, &myTouch,
 class EnvironmentVars_S {
 public:
 	uint8_t temperatures[4];
+	uint16_t rawTemperatures[4];
+	uint8_t prevTemperature[4];
 	uint8_t setTemperatures[5];
 	//uint8_t timeType;
 	uint32_t startTime;
@@ -166,11 +178,19 @@ public:
 	uint8_t startStopStatus;
 	uint8_t timeMode;
 	boolean timeRefreshing;
+	//uint8_t tempLM35[4];
+	boolean heatingFETstatus[4];
+	boolean prev_heatingFETstatus[4];
+
 	EnvironmentVars_S()
 	{
 		for(uint8_t i = 0; i < 4; i++) {
 			temperatures[i] = 0;
-			setTemperatures[i] = 80;
+			rawTemperatures[i] = 0;
+			prevTemperature[i] = 0;
+			setTemperatures[i] = 30;
+			heatingFETstatus[i] = false;
+			prev_heatingFETstatus[i] = false;
 		}
 		setTemperatures[ALL_NUMBERS] = 80;
 		startTime = 0;
@@ -196,10 +216,12 @@ void setup()
 #if DEBUGLEVEL > 0
 	Serial.begin(115200);
 #endif
-	Serial.println(sizeof(unsigned long));
-	Serial.println(sizeof(unsigned long long));
-	Serial.println(sizeof(unsigned int));
-	Serial.println(sizeof(unsigned char));
+	//FETs outputs
+	for(uint8_t i = 0; i < numberOfFETs; i++) {
+		pinMode(FETouts[i], OUTPUT);
+	}
+	clearAllFETs();
+
 	// Initial setup
 	myGLCD.InitLCD();
 	myGLCD.clrScr();
@@ -245,8 +267,74 @@ void welcomeScreen()
 	tone(TONE_PIN, 1000, 50);
 }
 
+void measureTemp() 
+{
+		const int errorOffset_LM35_1 = -112; 
+		const int errorOffset_LM35_2 = -120; 
+		const uint8_t numOfSamples = 100;
+
+		uint32_t LM35_1 = 0; // = analogRead(A3);
+		uint32_t LM35_2 = 0; // = analogRead(A2);
+
+		for(uint8_t i = 0; i < numOfSamples; i++)
+		{
+			LM35_1 += analogRead(A3);
+			LM35_2 += analogRead(A2);
+		}
+		LM35_1 /= numOfSamples;
+		LM35_2 /= numOfSamples;
+
+		uint32_t mVolt_1 = map(LM35_1+errorOffset_LM35_1, 0, 4095, 0, 3300);
+		uint32_t mVolt_2 = map(LM35_2+errorOffset_LM35_2, 0, 4095, 0, 3300);
+
+		envVars.rawTemperatures[0] = mVolt_1;
+		envVars.rawTemperatures[1] = mVolt_2;
+		envVars.temperatures[0] = mVolt_1 / 10;
+		envVars.temperatures[1] = mVolt_2 / 10;
+}
+
+//A statuz valtozas miatt a fet kimenetek es pottyok torlese
+void clearAllFETs() {
+	for(uint8_t i = 0; i < numberOfFETs; i++) {
+		envVars.heatingFETstatus[i] = false;
+		envVars.prev_heatingFETstatus[i] = false;
+		drawHeatPoint(i);
+		digitalWrite(FETouts[i], LOW);
+	}
+}
+
+//Statusz Startra allitasa
+void setStartStatus() 
+{
+	//Idozitos inditasa
+	envVars.startTime = millis();
+	envVars.startStopStatus = START_STATUS;
+	drawStartStopB(START_STATUS);
+}
+
+//Statusz Stopra allitasa
+void setStopStatus() 
+{
+	envVars.startStopStatus = STOP_STATUS;
+	drawStartStopB(STOP_STATUS);
+	clearAllFETs();
+}
+
 void loop()
 {
+
+#if DEBUGLEVEL > 0
+	static unsigned int timeSerialLoop = 0;
+
+	if(millis() > timeSerialLoop)
+	{
+		timeSerialLoop += 1000;
+
+		Serial.print("LM35 - 1 :"); Serial.print(envVars.temperatures[0]); Serial.println("'C");
+		Serial.print("LM35 - 2 :"); Serial.print(envVars.temperatures[1]); Serial.println("'C");
+	}
+#endif
+
 	if(millis() > envVars.timeRawSec && envVars.startStopStatus == START_STATUS) {
 		envVars.timeRawSec = millis() + 1000;
 		uint32_t sec;
@@ -278,16 +366,10 @@ void loop()
 
 	//Start/Stop gomb lekerdezese
 	if(startButton.getButtonEvent() == RELEASED) {
-		if(envVars.startStopStatus == STOP_STATUS) {
-			//Idozitos inditasa
-			envVars.startTime = millis();
-			envVars.startStopStatus = START_STATUS;
-			drawStartStopB(START_STATUS);
-
-		} else {
-			envVars.startStopStatus = STOP_STATUS;
-			drawStartStopB(STOP_STATUS);
-		}
+		if(envVars.startStopStatus == STOP_STATUS)
+			setStartStatus();
+		else 
+			setStopStatus();
 	}
 
 	//Ha frissult az ido akkor frissitjuk a time buttonon is
@@ -296,6 +378,44 @@ void loop()
 		refreshTime();
 	}
 
+	//homersekletet merunk, es ha valtozik a homerseklet akkor frissitjuk a
+	//kiirast a beallitott idokozonkent. A meres viszont minden loop() korben
+	//lefut
+	measureTemp();
+	static unsigned int measureTempPrintTime = 0;
+	if(millis() > measureTempPrintTime) {
+		measureTempPrintTime += 1000;
+		for(uint8_t i = 0; i < numberOfSensors; i++) {
+			if( envVars.prevTemperature[i] != envVars.temperatures[i] ) {
+				envVars.prevTemperature[i] = envVars.temperatures[i];
+				temperatures[i]->setText(envVars.temperatures[i],"'C");
+				drawTemperatures(temperatures[i]);
+				drawSetTemperatures(setTemperatures[i],i);
+				drawNumbers(i);
+				drawHeatPoint(i);
+			}
+		}
+	}
+
+	//Homerseklet szabalyozas
+	if(envVars.startStopStatus == START_STATUS) {
+		for(uint8_t i = 0; i < numberOfFETs; i++) {
+			if(envVars.rawTemperatures[i] < envVars.setTemperatures[i] * 10 &&
+				!envVars.prev_heatingFETstatus[i]) {
+				envVars.heatingFETstatus[i] = true;
+				envVars.prev_heatingFETstatus[i] = true;
+				digitalWrite(FETouts[i], HIGH);
+				drawHeatPoint(i);
+			} 
+			else if(envVars.rawTemperatures[i] > envVars.setTemperatures[i] * 10 &&
+				envVars.prev_heatingFETstatus[i]) {
+				envVars.heatingFETstatus[i] = false;
+				envVars.prev_heatingFETstatus[i] = false;
+				digitalWrite(FETouts[i], LOW);
+				drawHeatPoint(i);
+			}
+		}
+	}
 }
 
 //A kepernyo ujrarajzolasa
@@ -303,6 +423,7 @@ void drawScreen() {
 	for(uint8_t i = 0; i < 4; i++) {
 		drawTemperatures(temperatures[i]);
 		drawSetTemperatures(setTemperatures[i], i);
+		drawHeatPoint(i);
 	}
 	drawNumbers(ALL_NUMBERS);
 	drawElapsedTime();
@@ -514,6 +635,27 @@ void getTimeStr(char * s) {
 		s_sec = "0" + s_sec;
 	String concat_s = s_min + ":" + s_sec;
 	concat_s.toCharArray(s,7);
+}
+
+//Futest jelzo potty rajzolasa torlese
+void drawHeatPoint(uint8_t tag) {
+	//Torlunk vagy rajzolunk?
+	if(envVars.heatingFETstatus[tag]) {
+		myGLCD.setColor(BUTTON_INV_COLOR);
+	} else {
+		myGLCD.setColor(BUTTON_NORM_COLOR);
+	}
+
+	//Melyik pontot rajzoljuk ki
+	if(tag == 0) {
+		myGLCD.fillRect(5,30,10,35);
+	} else if ( tag == 1 ) {
+		myGLCD.fillRect(5,90,10,95);
+	} else if ( tag == 2 ) {
+		myGLCD.fillRect(5,150,10,155);
+	} else {
+		myGLCD.fillRect(5,210,10,215);
+	}
 }
 
 
