@@ -328,7 +328,7 @@ void loop()
 
 	if(millis() > timeSerialLoop)
 	{
-		timeSerialLoop += 1000;
+		timeSerialLoop += 3000;
 
 		Serial.print("LM35 - 1 :"); Serial.print(envVars.temperatures[0]); Serial.println("'C");
 		Serial.print("LM35 - 2 :"); Serial.print(envVars.temperatures[1]); Serial.println("'C");
@@ -400,14 +400,14 @@ void loop()
 	//Homerseklet szabalyozas
 	if(envVars.startStopStatus == START_STATUS) {
 		for(uint8_t i = 0; i < numberOfFETs; i++) {
-			if(envVars.rawTemperatures[i] < envVars.setTemperatures[i] * 10 &&
+			if(envVars.rawTemperatures[i] < (envVars.setTemperatures[i] * 10) + 5 &&
 				!envVars.prev_heatingFETstatus[i]) {
 				envVars.heatingFETstatus[i] = true;
 				envVars.prev_heatingFETstatus[i] = true;
 				digitalWrite(FETouts[i], HIGH);
 				drawHeatPoint(i);
 			} 
-			else if(envVars.rawTemperatures[i] > envVars.setTemperatures[i] * 10 &&
+			else if(envVars.rawTemperatures[i] > (envVars.setTemperatures[i] * 10) + 5 &&
 				envVars.prev_heatingFETstatus[i]) {
 				envVars.heatingFETstatus[i] = false;
 				envVars.prev_heatingFETstatus[i] = false;
